@@ -15,6 +15,8 @@
 </template>
 
 <script type="text/ecmascript-6">
+  import bus from '../emptyVue';
+
   export default {
     methods: {
       addCount (e) {
@@ -27,6 +29,7 @@
         } else {
           this.$set(this.food, 'count', 1);
         }
+        bus.$emit('drop', e);
       },
       decreaseCount (e) {
         if (!e._constructed) {
@@ -50,7 +53,7 @@
 <style lang="stylus" rel="stylesheet/stylus">
   .cart-control
     font-size: 0
-    .decrease, .add
+    .add
       display: inline-block
       font-size: 24px
       line-height: 24px
@@ -60,11 +63,21 @@
       height: 36px
       box-sizing: border-box
     .decrease
+      display: inline-block
+      padding: 6px
+      box-sizing: border-box
       transition: all 0.4s linear
-      transform: translate3d(0, 0, 0)
       .icon-remove_circle_outline
+        display:inline-block
+        font-size: 24px
+        line-height: 24px
+        color: rgb(0, 160, 220)
         transition: all 0.4s linear
-        transform: rotate(0)
+      &.move-enter-active
+        opacity: 1
+        transform: translate3d(0, 0, 0)
+        .icon-remove_circle_outline
+          transform: rotate(0)
       &.move-enter, &.move-leave-active
         opacity: 0
         transform: translate3d(24px, 0, 0)

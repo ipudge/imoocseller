@@ -13,11 +13,56 @@
         {{payDesc}}
       </span>
     </div>
+    <div class="ball-cotainer">
+      <transition v-for="ball in balls" name="drop" v-on:before-enter="beforeEnter" v-on:enter="enter"
+                  v-on:after-enter="afterEnter">
+        <div class="ball" v-show="ball.show">
+          <div class="inner"></div>
+        </div>
+      </transition>
+    </div>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
+  import bus from '../emptyVue';
+
   export default {
+    created () {
+      bus.$on('drop', (e) => {
+        let init = false;
+        this.balls.forEach((ball) => {
+          if (!ball.show && !init) {
+            ball.show = true;
+            ball.el = e.target;
+            this.dropBalls.push(ball);
+            init = true;
+          }
+        });
+      });
+    },
+    data () {
+      return {
+        balls: [
+          {
+            show: false
+          },
+          {
+            show: false
+          },
+          {
+            show: false
+          },
+          {
+            show: false
+          },
+          {
+            show: false
+          }
+        ],
+        dropBalls: []
+      };
+    },
     props: ['seller', 'foods'],
     computed: {
       priceNow () {
@@ -42,6 +87,44 @@
           return `还差${minusPrice}元起送`;
         } else {
           return '去结算';
+        }
+      }
+    },
+    methods: {
+      beforeEnter (el) {
+        let count = this.balls.length;
+        while (count--) {
+          let ball = this.balls[count];
+          if (ball.show) {
+            let rect = ball.el.getBoundingClientRect();
+            let x = rect.left - 32;
+            let y = -(window.innerHeight - rect.top - 22);
+            el.style.display = '';
+            el.style.webkitTransform = `translate3d(0,${y}px,0)`;
+            el.style.transfrom = `translate3d(0,${y}px,0)`;
+            let inner = el.getElementsByClassName('inner')[0];
+            inner.style.webkitTransform = `translate3d(${x}px,0,0)`;
+            inner.style.transform = `translate3d(${x}px,0,0)`;
+          }
+        }
+      },
+      enter (el, done) {
+        /* eslint-disable no-unused-vars */
+        let elHeight = el.offsetHeight;
+        this.$nextTick(() => {
+          el.style.webkitTransform = 'translate3d(0,0,0)';
+          el.style.transfrom = 'translate3d(0,0,0)';
+          let inner = el.getElementsByClassName('inner')[0];
+          inner.style.webkitTransform = 'translate3d(0,0,0)';
+          inner.style.transform = 'translate3d(0,0,0)';
+        });
+        done();
+      },
+      afterEnter (el) {
+        let ball = this.dropBalls.shift();
+        if (ball) {
+          ball.show = false;
+          el.style.display = 'none';
         }
       }
     }
@@ -134,4 +217,18 @@
       &.active
         background: #00b43c
         color: #fff
+    .ball-cotainer
+      .ball
+        position: fixed
+        left: 32px
+        bottom: 22px
+        z-index: 200
+        &.drop-leave-active
+          transition: all 0.4s cubic-bezier(0.49, -0.29, 0.75, 0.41)
+        .inner
+          width: 16px
+          height: 16px
+          border-radius: 50%
+          background: rgb(0, 160, 220)
+          transition: all 0.4s
 </style>
