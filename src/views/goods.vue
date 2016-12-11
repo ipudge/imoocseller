@@ -34,7 +34,7 @@
         </li>
       </ul>
     </div>
-    <shop-cart :seller="seller" :foods="foods"></shop-cart>
+    <shop-cart :seller="seller" :selectedFoods="selectedFoods"></shop-cart>
   </div>
 </template>
 
@@ -42,6 +42,7 @@
   import BScroll from 'better-scroll';
   import shopCart from 'components/shop-cart';
   import cartControl from 'components/cart-control';
+  import bus from '../emptyVue';
 
   const NO_ERROR = 0;
 
@@ -57,6 +58,11 @@
     created () {
       this.fetchData();
       this.classList = ['decrease', 'discount', 'special', 'invoice', 'guarantee'];
+      bus.$on('cleanShopCart', () => {
+        this.selectedFoods.forEach((food) => {
+          food.count = 0;
+        });
+      });
     },
     computed: {
       activeIndex () {
@@ -69,14 +75,16 @@
         }
         return 0;
       },
-      foods () {
-        let foods = [];
+      selectedFoods () {
+        let selectedFoods = [];
         this.goods.forEach((good) => {
           good.foods.forEach((food) => {
-            foods.push(food);
+            if (food.count > 0) {
+              selectedFoods.push(food);
+            }
           });
         });
-        return foods;
+        return selectedFoods;
       }
     },
     components: {
@@ -229,6 +237,6 @@
             color: #93999f
       .cart-wrapper
         position: absolute
-        right : 0
+        right: 0
         bottom: 12px
 </style>

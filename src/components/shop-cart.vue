@@ -1,31 +1,59 @@
 <template>
-  <div class="shop-cart">
-    <div class="cart-left">
-      <div class="icon-wrapper" :class="{'active': totalCount > 0}">
-        <i class="icon-shopping_cart"></i>
-        <span class="totalCount" v-if="totalCount > 0">{{totalCount}}</span>
+  <div>
+    <div class="shop-cart" @click="showDetail">
+      <div class="cart-left">
+        <div class="icon-wrapper" :class="{'active': totalCount > 0}">
+          <i class="icon-shopping_cart"></i>
+          <span class="totalCount" v-if="totalCount > 0">{{totalCount}}</span>
+        </div>
+        <div class="priceNow" :class="{'active': totalCount > 0}">￥{{priceNow}}</div>
+        <div class="desc">另需配送费￥{{seller.deliveryPrice}}元</div>
       </div>
-      <div class="priceNow" :class="{'active': totalCount > 0}">￥{{priceNow}}</div>
-      <div class="desc">另需配送费￥{{seller.deliveryPrice}}元</div>
-    </div>
-    <div class="cart-right" :class="{'active': priceNow >= seller.minPrice}">
+      <div class="cart-right" :class="{'active': priceNow >= seller.minPrice}" @click.stop="goToPayment">
       <span class="text">
         {{payDesc}}
       </span>
+      </div>
+      <div class="ball-cotainer">
+        <transition v-for="ball in balls" name="drop" v-on:before-enter="beforeEnter" v-on:enter="enter"
+                    v-on:after-enter="afterEnter">
+          <div class="ball" v-show="ball.show">
+            <div class="inner"></div>
+          </div>
+        </transition>
+      </div>
     </div>
-    <div class="ball-cotainer">
-      <transition v-for="ball in balls" name="drop" v-on:before-enter="beforeEnter" v-on:enter="enter"
-                  v-on:after-enter="afterEnter">
-        <div class="ball" v-show="ball.show">
-          <div class="inner"></div>
+    <transition name="slideUp">
+      <div class="shop-cart-detail" ref="shopCartDetail" v-show="shopCartShow">
+        <div class="header">
+          <span class="name">购物车</span>
+          <span class="cleanShopCart" @click="cleanShopCart">清空</span>
         </div>
-      </transition>
-    </div>
+        <div class="content" ref="detailList">
+          <ul>
+            <li v-for="item in selectedFoods" class="detail-wrapper border-1px">
+              <div class="detail">
+                <span class="name">${{item.name}}</span>
+                <span class="price">￥${{item.price}}</span>
+                <div class="cartControl-wrapper">
+                  <cart-control :food="item"></cart-control>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </transition>
+    <transition name="fade">
+      <div class="mask" ref="mask" @click="hideDetail" v-show="shopCartShow"></div>
+    </transition>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
   import bus from '../emptyVue';
+  import cartControl from 'components/cart-control';
+  import BScroll from 'better-scroll';
 
   export default {
     created () {
@@ -39,6 +67,9 @@
             init = true;
           }
         });
+      });
+      this.detailListScroll = new BScroll(this.$refs.detailList, {
+        click: true
       });
     },
     data () {
@@ -60,21 +91,22 @@
             show: false
           }
         ],
-        dropBalls: []
+        dropBalls: [],
+        shopCartShow: false
       };
     },
     props: ['seller', 'foods'],
     computed: {
       priceNow () {
         let price = 0;
-        this.foods.forEach((food) => {
+        this.selectedFoods.forEach((food) => {
           price += food.price * food.count;
         });
         return price;
       },
       totalCount () {
         let totalCount = 0;
-        this.foods.forEach((food) => {
+        this.selectedFoods.forEach((food) => {
           totalCount += food.count;
         });
         return totalCount;
@@ -89,6 +121,9 @@
           return '去结算';
         }
       }
+    },
+    components: {
+      cartControl
     },
     methods: {
       beforeEnter (el) {
@@ -126,18 +161,37 @@
           ball.show = false;
           el.style.display = 'none';
         }
+      },
+      showDetail () {
+        if (this.totalCount) {
+          this.shopCartShow = !this.shopCartShow;
+        }
+      },
+      goToPayment () {
+        if (this.priceNow > this.seller.minPrice) {
+          console.log(`本次一共消费${this.priceNow}`);
+        }
+      },
+      hideDetail () {
+        this.shopCartShow = false;
+      },
+      cleanShopCart () {
+        bus.$emit('cleanShopCart');
       }
     }
   };
 </script>
 
 <style lang="stylus" rel="stylesheet/stylus">
+  @import "../common/stylus/mixin.styl"
+
   .shop-cart
     display: flex
     position: fixed
     bottom: 0
     width: 100%
     height: 48px
+    z-index: 201
     background: #141d27
     font-size: 0
     .cart-left
@@ -231,4 +285,72 @@
           border-radius: 50%
           background: rgb(0, 160, 220)
           transition: all 0.4s
+
+  .mask
+    position: fixed
+    top: 0
+    bottom: 0
+    left: 0
+    right: 0
+    background: rgba(7, 7, 27, 0.8)
+    z-index: 199
+    transition: opacity .5s
+    &.fade-enter, &.fade-leave-active
+      opacity: 0
+
+  .shop-cart-detail
+    position: fixed
+    left: 0
+    bottom: 48px
+    z-index: 200
+    &.slideUp-enter-active
+      transition: all 0.5s
+      transform: translate3d(0, -100%, 0)
+    &.slideUp-enter, &.slideUp-leave-active
+      transform: translate3d(0, 0, 0)
+    .header
+      height: 80px
+      line-height: 80px
+      padding: 18px
+      ground: #f3f5f7
+      font-size: 0
+      border-bottom: 1px solid rgba(7, 17, 27, 0.1)
+      .name
+        display: inline-block
+        font-size: 14px
+        font-weight: 200
+        color: rgb(7, 17, 27)
+        float: left
+      .cleanShopCart
+        display: inline-block
+        height: 80px
+        padding: 0 6px
+        font-size: 12px
+        color: rgb(0, 160, 220)
+        float: right
+    .content
+      max-height: 215px
+      overflow: hidden
+      background: #fff
+      height: 48px
+      line-height: 48px
+      .detail-wrapper
+        position: relative
+        padding: 0 18px
+        font-size: 0
+        border-1px(rgba(7, 17, 27, 0.1))
+        .name
+          font-size: 14px
+          color: rgb(7, 17, 147)
+        .price
+          position: absolute
+          right: 102px
+          bottom: 6px
+          font-size: 14px
+          color: rgb(240, 20, 20)
+          font-weight: 700
+        .cartControl-wrapper
+          position: absolute
+          right: 0
+          bottom: 6px
 </style>
