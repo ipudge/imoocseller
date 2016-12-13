@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="shop-cart-wrapper">
     <div class="shop-cart" @click="showDetail">
       <div class="cart-left">
         <div class="icon-wrapper" :class="{'active': totalCount > 0}">
@@ -10,9 +10,9 @@
         <div class="desc">另需配送费￥{{seller.deliveryPrice}}元</div>
       </div>
       <div class="cart-right" :class="{'active': priceNow >= seller.minPrice}" @click.stop="goToPayment">
-      <span class="text">
-        {{payDesc}}
-      </span>
+        <span class="text">
+          {{payDesc}}
+        </span>
       </div>
       <div class="ball-cotainer">
         <transition v-for="ball in balls" name="drop" v-on:before-enter="beforeEnter" v-on:enter="enter"
@@ -24,7 +24,7 @@
       </div>
     </div>
     <transition name="slideUp">
-      <div class="shop-cart-detail" ref="shopCartDetail" v-show="shopCartShow">
+      <div class="shop-cart-detail" v-show="detailsShow">
         <div class="header">
           <span class="name">购物车</span>
           <span class="cleanShopCart" @click="cleanShopCart">清空</span>
@@ -33,8 +33,8 @@
           <ul>
             <li v-for="item in selectedFoods" class="detail-wrapper border-1px">
               <div class="detail">
-                <span class="name">${{item.name}}</span>
-                <span class="price">￥${{item.price}}</span>
+                <span class="name">{{item.name}}</span>
+                <span class="price">￥{{item.price}}</span>
                 <div class="cartControl-wrapper">
                   <cart-control :food="item"></cart-control>
                 </div>
@@ -45,7 +45,7 @@
       </div>
     </transition>
     <transition name="fade">
-      <div class="mask" ref="mask" @click="hideDetail" v-show="shopCartShow"></div>
+      <div class="mask" ref="mask" @click="hideDetail" v-show="detailsShow"></div>
     </transition>
   </div>
 </template>
@@ -68,9 +68,6 @@
           }
         });
       });
-      this.detailListScroll = new BScroll(this.$refs.detailList, {
-        click: true
-      });
     },
     data () {
       return {
@@ -92,10 +89,11 @@
           }
         ],
         dropBalls: [],
-        shopCartShow: false
+        shopCartShow: false,
+        detailsShow: false
       };
     },
-    props: ['seller', 'foods'],
+    props: ['seller', 'selectedFoods'],
     computed: {
       priceNow () {
         let price = 0;
@@ -119,6 +117,16 @@
           return `还差${minusPrice}元起送`;
         } else {
           return '去结算';
+        }
+      },
+      detailsShow () {
+        if (this.totalCount && this.shopCartShow) {
+          this.$nextTick(() => {
+            this.detailListScroll = new BScroll(this.$refs.detailList, {
+              click: true
+            });
+          });
+          return true;
         }
       }
     },
@@ -163,12 +171,13 @@
         }
       },
       showDetail () {
-        if (this.totalCount) {
-          this.shopCartShow = !this.shopCartShow;
+        if (!this.totalCount) {
+          return;
         }
+        this.shopCartShow = !this.shopCartShow;
       },
       goToPayment () {
-        if (this.priceNow > this.seller.minPrice) {
+        if (this.priceNow >= this.seller.minPrice) {
           console.log(`本次一共消费${this.priceNow}`);
         }
       },
@@ -176,6 +185,7 @@
         this.shopCartShow = false;
       },
       cleanShopCart () {
+        this.shopCartShow = false;
         bus.$emit('cleanShopCart');
       }
     }
@@ -184,6 +194,8 @@
 
 <style lang="stylus" rel="stylesheet/stylus">
   @import "../common/stylus/mixin.styl"
+  .shop-cart-wrapper
+    position: fixed
 
   .shop-cart
     display: flex
@@ -302,18 +314,20 @@
     position: fixed
     left: 0
     bottom: 48px
+    width: 100%
     z-index: 200
     &.slideUp-enter-active
       transition: all 0.5s
-      transform: translate3d(0, -100%, 0)
-    &.slideUp-enter, &.slideUp-leave-active
       transform: translate3d(0, 0, 0)
+    &.slideUp-enter, &.slideUp-leave-active
+      transform: translate3d(0, 100%, 0)
     .header
-      height: 80px
-      line-height: 80px
-      padding: 18px
-      ground: #f3f5f7
+      height: 40px
+      line-height: 40px
+      padding: 0 9px
+      background: #f3f5f7
       font-size: 0
+      box-sizing: border-box
       border-bottom: 1px solid rgba(7, 17, 27, 0.1)
       .name
         display: inline-block
@@ -323,7 +337,7 @@
         float: left
       .cleanShopCart
         display: inline-block
-        height: 80px
+        height: 40px
         padding: 0 6px
         font-size: 12px
         color: rgb(0, 160, 220)
@@ -332,23 +346,22 @@
       max-height: 215px
       overflow: hidden
       background: #fff
-      height: 48px
-      line-height: 48px
       .detail-wrapper
         position: relative
-        padding: 0 18px
+        padding: 0 9px
         font-size: 0
         border-1px(rgba(7, 17, 27, 0.1))
         .name
           font-size: 14px
-          color: rgb(7, 17, 147)
+          color: #07111b
+          line-height: 48px
         .price
           position: absolute
           right: 102px
-          bottom: 6px
           font-size: 14px
           color: rgb(240, 20, 20)
           font-weight: 700
+          line-height: 48px
         .cartControl-wrapper
           position: absolute
           right: 0

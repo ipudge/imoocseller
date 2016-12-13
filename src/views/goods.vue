@@ -34,7 +34,7 @@
         </li>
       </ul>
     </div>
-    <shop-cart :seller="seller" :selectedFoods="selectedFoods"></shop-cart>
+    <shop-cart :seller="seller" :selected-foods="selectedFoods"></shop-cart>
   </div>
 </template>
 
@@ -84,6 +84,7 @@
             }
           });
         });
+        console.log(selectedFoods);
         return selectedFoods;
       }
     },

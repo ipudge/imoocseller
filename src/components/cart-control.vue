@@ -29,6 +29,7 @@
         } else {
           this.$set(this.food, 'count', 1);
         }
+        console.log(this.food.count);
         bus.$emit('drop', e);
       },
       decreaseCount (e) {
@@ -41,10 +42,8 @@
         } else {
           this.$set(this.food, 'count', 0);
         }
+        console.log(this.food.count);
       }
-    },
-    created () {
-      this.$set(this.food, 'count', 0);
     },
     props: ['food']
   };
