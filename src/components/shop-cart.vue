@@ -120,13 +120,25 @@
         }
       },
       detailsShow () {
-        if (this.totalCount && this.shopCartShow) {
-          this.$nextTick(() => {
-            this.detailListScroll = new BScroll(this.$refs.detailList, {
-              click: true
+        if (!this.totalCount) {
+          this.shopCartShow = false;
+          return false;
+        }
+        if (this.shopCartShow) {
+          if (this.detailListScroll) {
+            this.$nextTick(() => {
+              this.detailListScroll.refresh();
+            })
+          } else {
+            this.$nextTick(() => {
+              this.detailListScroll = new BScroll(this.$refs.detailList, {
+                click: true
+              });
             });
-          });
+          }
           return true;
+        } else {
+          return false;
         }
       }
     },
@@ -185,7 +197,6 @@
         this.shopCartShow = false;
       },
       cleanShopCart () {
-        this.shopCartShow = false;
         bus.$emit('cleanShopCart');
       }
     }
@@ -304,8 +315,9 @@
     bottom: 0
     left: 0
     right: 0
-    background: rgba(7, 7, 27, 0.8)
+    background: rgba(7, 7, 27, 0.6)
     z-index: 199
+    backdrop-filter: blur(10px)
     transition: opacity .5s
     &.fade-enter, &.fade-leave-active
       opacity: 0
@@ -316,8 +328,8 @@
     bottom: 48px
     width: 100%
     z-index: 200
+    transition: all 0.5s
     &.slideUp-enter-active
-      transition: all 0.5s
       transform: translate3d(0, 0, 0)
     &.slideUp-enter, &.slideUp-leave-active
       transform: translate3d(0, 100%, 0)
