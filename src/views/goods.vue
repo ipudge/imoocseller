@@ -14,10 +14,10 @@
           <h2 class="title">{{item.name}}</h2>
           <ul>
             <li class="good-item border-1px" v-for="food in item.foods">
-              <div class="icon">
+              <div class="icon" @click="showFoodDetail(food)">
                 <img :src="food.icon" width="57" height="57"/>
               </div>
-              <div class="detail">
+              <div class="detail" @click="showFoodDetail(food)">
                 <h3 class="name">{{food.name}}</h3>
                 <p class="desc">{{food.description}}</p>
                 <p class="extra"><span class="count">月售{{food.sellCount}}</span>份好评率{{food.rating}}%</p>
@@ -35,6 +35,7 @@
       </ul>
     </div>
     <shop-cart :seller="seller" :selected-foods="selectedFoods"></shop-cart>
+    <food-detail :food="activeFood" :detail-show="foodDetailShow"></food-detail>
   </div>
 </template>
 
@@ -43,6 +44,7 @@
   import shopCart from 'components/shop-cart';
   import cartControl from 'components/cart-control';
   import bus from '../emptyVue';
+  import foodDetail from 'components/food-detail';
 
   const NO_ERROR = 0;
 
@@ -52,7 +54,9 @@
         goods: [],
         activeIndex: 0,
         heightList: [],
-        posY: 0
+        posY: 0,
+        foodDetailShow: false,
+        activeFood: {}
       };
     },
     created () {
@@ -62,6 +66,9 @@
         this.selectedFoods.forEach((food) => {
           food.count = 0;
         });
+      });
+      bus.$on('closeFoodDetail', () => {
+        this.foodDetailShow = false;
       });
     },
     computed: {
@@ -84,16 +91,20 @@
             }
           });
         });
-        console.log(selectedFoods);
         return selectedFoods;
       }
     },
     components: {
       shopCart,
-      cartControl
+      cartControl,
+      foodDetail
     },
     props: ['seller'],
     methods: {
+      showFoodDetail (food) {
+        this.activeFood = food;
+        this.foodDetailShow = true;
+      },
       fetchData () {
         this.$http.get('/api/goods').then((response) => {
           let result = response.body;

@@ -82,6 +82,7 @@ app.use(staticPath, express.static('./static'))
 // enable hot-reload and state-preserving
 // compilation error display
 app.use(hotMiddleware)
+var router = express.Router()
 
 app.get("*", function (req, res) {
   res.sendFile(path.join(__dirname, '../index1.html'))

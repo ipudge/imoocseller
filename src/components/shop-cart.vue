@@ -128,7 +128,7 @@
           if (this.detailListScroll) {
             this.$nextTick(() => {
               this.detailListScroll.refresh();
-            })
+            });
           } else {
             this.$nextTick(() => {
               this.detailListScroll = new BScroll(this.$refs.detailList, {
@@ -207,6 +207,7 @@
   @import "../common/stylus/mixin.styl"
   .shop-cart-wrapper
     position: fixed
+    z-index : 11
 
   .shop-cart
     display: flex
