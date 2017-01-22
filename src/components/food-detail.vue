@@ -22,7 +22,7 @@
             <div class="cartControl-wrapper" v-show="food.count != undefined && food.count > 0 ">
               <cart-control :food="food"></cart-control>
             </div>
-            <div class="addItem" v-show="food.count == 0|| food.count ===undefined" @click="addFood">加入购物车</div>
+            <div class="addItem" v-show="food.count == 0|| food.count ===undefined" @click.stop.prevent="addFood($event)">加入购物车</div>
           </div>
         </div>
         <div class="content" v-if="food.info">
@@ -31,7 +31,7 @@
         </div>
         <div class="ratings-wrapper">
           <h2 class="title">商品评价</h2>
-          <v-ratings :ratings="food.ratings" :rules="rules" :event="scrollRefresh"></v-ratings>
+          <v-ratings :ratings="food.ratings"  @refreshFoodDetail="scrollRefresh"></v-ratings>
         </div>
       </div>
     </div>
@@ -39,39 +39,32 @@
 </template>
 
 <script type="text/ecmascript-6">
-  import ratings from './ratings';
+  import ratings from './food-ratings';
   import BScroll from 'better-scroll';
   import cartControl from 'components/cart-control';
   import bus from '../emptyVue';
 
   export default {
-    created () {
-      bus.$on(this.scrollRefresh, () => {
-        this.$nextTick(() => {
-          this.foodDetailScroll.refresh();
-        });
-      });
-    },
     props: ['food', 'detailShow'],
-    data () {
-      return {
-        rules: {
-          0: '推荐',
-          1: '吐槽'
-        },
-        scrollRefresh: 'refreshFoodDetail'
-      };
-    },
     components: {
       'v-ratings': ratings,
       cartControl
     },
     methods: {
       hideFoodDetail () {
-        bus.$emit('closeFoodDetail');
+        this.$emit('closeFoodDetail');
       },
-      addFood () {
+      addFood (e) {
+        if (!e._constructed) {
+          return;
+        }
         this.$set(this.food, 'count', 1);
+        bus.$emit('drop', e);
+      },
+      scrollRefresh () {
+        this.$nextTick(() => {
+          this.foodDetailScroll.refresh();
+        });
       }
     },
     watch: {

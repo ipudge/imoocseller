@@ -197,7 +197,7 @@
         this.shopCartShow = false;
       },
       cleanShopCart () {
-        bus.$emit('cleanShopCart');
+        this.$emit('cleanShopCart');
       }
     }
   };

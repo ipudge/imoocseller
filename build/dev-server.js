@@ -85,7 +85,7 @@ app.use(hotMiddleware)
 var router = express.Router()
 
 app.get("*", function (req, res) {
-  res.sendFile(path.join(__dirname, '../index1.html'))
+  res.sendFile(path.join(__dirname, '../index.html'))
 })
 
 module.exports = app.listen(port, function (err) {

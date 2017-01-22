@@ -1,13 +1,7 @@
 <template>
   <div class="ratings-wrapper">
-    <div class="select-box border-1px">
-      <span class="select-item all" @click="changeType(99)">全部{{ratings.length}}</span>
-      <span class="select-item good" @click="changeType(0)">{{rules[0]}}{{goodCount}}</span>
-      <span class="select-item bad" @click="changeType(1)">{{rules[1]}}{{badCount}}</span>
-    </div>
-    <div class="operate-wrapper" @click="toggleIsEmpty">
-      <i class="icon-check_circle" :class="{'active' :!isEmpty}"></i>
-      <span class="text">只看有内容的评价</span>
+    <div class="select-control">
+      <select-control @changeType="changeType" @toggleIsEmpty="toggleIsEmpty" :rules="rules" :ratings="ratings" :isEmpty="isEmpty"></select-control>
     </div>
     <div class="rating-list">
       <ul>
@@ -31,17 +25,24 @@
 </template>
 
 <script type="text/ecmascript-6">
-  import bus from '../emptyVue';
+  import selectControl from './select-control.vue';
+
+  const allCode = 99;
 
   export default {
-    created () {
-      this.ratingsList = this.ratings;
-    },
     data () {
       return {
         isEmpty: false,
-        activeRateType: 99
+        activeRateType: allCode,
+        rules: {
+          0: '推荐',
+          1: '吐槽',
+          99: '全部'
+        }
       };
+    },
+    components: {
+      selectControl
     },
     props: {
       'ratings': {
@@ -49,19 +50,12 @@
         default: function () {
           return [];
         }
-      },
-      'rules': {
-        type: Object,
-        default: function () {
-          return {};
-        }
-      },
-      'event': String
+      }
     },
     computed: {
       ratingsList () {
         let list = [];
-        if (this.activeRateType === 99) {
+        if (this.activeRateType === allCode) {
           list = this.ratings;
         } else {
           this.ratings.forEach((rating) => {
@@ -81,18 +75,6 @@
           });
           return ratingsList;
         }
-      },
-      goodCount () {
-        let list = [];
-        this.ratings.forEach((rating) => {
-          if (rating.rateType === 0) {
-            list.push(rating);
-          }
-        });
-        return list.length;
-      },
-      badCount () {
-        return this.ratings.length - this.goodCount;
       }
     },
     methods: {
@@ -106,7 +88,7 @@
     watch: {
       ratingsList: {
         handler () {
-          bus.$emit(this.event);
+          this.$emit('refreshFoodDetail');
         }
       }
     }
@@ -118,48 +100,6 @@
 
   .ratings-wrapper
     background: #fff
-    .select-box
-      padding: 12px 0 18px
-      margin: 0 18px
-      font-size: 0
-      border-1px(rgba(7, 17, 27, 0.1))
-      .select-item
-        display: inline-block
-        text-align: center
-        font-size: 12px
-        line-height: 16px
-        padding: 8px 12px
-        margin-right: 8px
-        border-radius: 1px
-        &.all
-          color: #fff
-          background: rgb(0, 160, 220)
-        &.good
-          color: rgb(77, 85, 93)
-          background: rgba(0, 160, 220, 0.2)
-        &.bad
-          color: rgb(77, 85, 93)
-          background: rgba(77, 85, 93, 0.2)
-
-    .operate-wrapper
-      padding: 12px 18px
-      font-size: 0
-      border-bottom: 1px solid rgba(7, 17, 27, 0.2)
-      .icon-check_circle
-        display: inline-block
-        vertical-align: top
-        font-size: 24px
-        line-height: 24px
-        color: rgb(147, 153, 159)
-        margin-right: 4px
-        &.active
-          color: #00c850
-      .text
-        display: inline-block
-        vertical-align: top
-        font-size: 12px
-        line-height: 24px
-        color: rgb(147, 153, 159)
     .rating-list
       padding: 0 18px
       .rating-item

@@ -13,11 +13,11 @@
         <li v-for="item in goods" class="kind-goods">
           <h2 class="title">{{item.name}}</h2>
           <ul>
-            <li class="good-item border-1px" v-for="food in item.foods">
-              <div class="icon" @click="showFoodDetail(food)">
+            <li class="good-item border-1px" v-for="food in item.foods" @click="showFoodDetail(food)">
+              <div class="icon">
                 <img :src="food.icon" width="57" height="57"/>
               </div>
-              <div class="detail" @click="showFoodDetail(food)">
+              <div class="detail">
                 <h3 class="name">{{food.name}}</h3>
                 <p class="desc">{{food.description}}</p>
                 <p class="extra"><span class="count">月售{{food.sellCount}}</span>份好评率{{food.rating}}%</p>
@@ -34,8 +34,8 @@
         </li>
       </ul>
     </div>
-    <shop-cart :seller="seller" :selected-foods="selectedFoods"></shop-cart>
-    <food-detail :food="activeFood" :detail-show="foodDetailShow"></food-detail>
+    <shop-cart :seller="seller" :selected-foods="selectedFoods" @cleanShopCart="cleanShopCart"></shop-cart>
+    <food-detail :food="activeFood" :detail-show="foodDetailShow" @closeFoodDetail="closeFoodDetail"></food-detail>
   </div>
 </template>
 
@@ -43,7 +43,6 @@
   import BScroll from 'better-scroll';
   import shopCart from 'components/shop-cart';
   import cartControl from 'components/cart-control';
-  import bus from '../emptyVue';
   import foodDetail from 'components/food-detail';
 
   const NO_ERROR = 0;
@@ -62,14 +61,6 @@
     created () {
       this.fetchData();
       this.classList = ['decrease', 'discount', 'special', 'invoice', 'guarantee'];
-      bus.$on('cleanShopCart', () => {
-        this.selectedFoods.forEach((food) => {
-          food.count = 0;
-        });
-      });
-      bus.$on('closeFoodDetail', () => {
-        this.foodDetailShow = false;
-      });
     },
     computed: {
       activeIndex () {
@@ -101,6 +92,14 @@
     },
     props: ['seller'],
     methods: {
+      cleanShopCart () {
+        this.selectedFoods.forEach((food) => {
+          food.count = 0;
+        });
+      },
+      closeFoodDetail () {
+        this.foodDetailShow = false;
+      },
       showFoodDetail (food) {
         this.activeFood = food;
         this.foodDetailShow = true;
