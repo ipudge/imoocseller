@@ -89,8 +89,7 @@
           }
         ],
         dropBalls: [],
-        shopCartShow: false,
-        detailsShow: false
+        shopCartShow: false
       };
     },
     props: ['seller', 'selectedFoods'],
