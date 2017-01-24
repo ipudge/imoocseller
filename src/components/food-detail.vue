@@ -22,7 +22,9 @@
             <div class="cartControl-wrapper" v-show="food.count != undefined && food.count > 0 ">
               <cart-control :food="food"></cart-control>
             </div>
-            <div class="addItem" v-show="food.count == 0|| food.count ===undefined" @click.stop.prevent="addFood($event)">加入购物车</div>
+            <transition name="fade">
+              <div class="addItem" v-show="food.count == 0|| food.count ===undefined" @click.stop.prevent="addFood($event)">加入购物车</div>
+            </transition>
           </div>
         </div>
         <div class="content" v-if="food.info">
@@ -172,6 +174,9 @@
         text-align: center
         border-radius: 12px
         background: rgb(0, 160, 220)
+        transition: all 0.5s
+        &.fade-enter, &.fade-leave-active
+          opacity: 0
     .content
       box-sizing: border-box
       margin: 18px 0

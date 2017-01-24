@@ -57,14 +57,21 @@
 
   export default {
     created () {
+      let i = 0;
       bus.$on('drop', (e) => {
-        let init = false;
-        this.balls.forEach((ball) => {
-          if (!ball.show && !init) {
-            ball.show = true;
-            ball.el = e.target;
-            this.dropBalls.push(ball);
-            init = true;
+        this.$nextTick(() => {
+          while (i < this.balls.length) {
+            i++;
+            if (i >= this.balls.length) {
+              i = 0;
+            }
+            let ball = this.balls[i];
+            if (!ball.show) {
+              ball.show = true;
+              ball.el = e.target;
+              this.dropBalls.push(ball);
+              return;
+            }
           }
         });
       });
@@ -206,7 +213,7 @@
   @import "../common/stylus/mixin.styl"
   .shop-cart-wrapper
     position: fixed
-    z-index : 11
+    z-index: 11
 
   .shop-cart
     display: flex
